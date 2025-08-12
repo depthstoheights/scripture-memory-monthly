@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Scripture Memory Cards</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        .week-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .week-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .week-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .week-btn.active {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .week1 { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+        .week2 { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+        .week3 { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+        .week4 { background: linear-gradient(135deg, #d299c2, #fef9d7); }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .memory-card {
+            width: 100%;
+            height: 250px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            border-radius: 15px;
+        }
+
+        .memory-card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        .card-content {
+            text-align: center;
+        }
+
+        .verse-text {
+            font-size: 1.1em;
+            line-height: 1.4;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .verse-reference {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .day-number {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            background: rgba(255,255,255,0.9);
+            color: #2c3e50;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .week-theme {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .week-theme h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.8em;
+        }
+
+        .week-theme p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .instruction {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Week-specific card colors */
+        .week1-cards .card-front { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+        .week1-cards .card-back { background: linear-gradient(135deg, #fecfef, #ff9a9e); }
+
+        .week2-cards .card-front { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+        .week2-cards .card-back { background: linear-gradient(135deg, #fed6e3, #a8edea); }
+
+        .week3-cards .card-front { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+        .week3-cards .card-back { background: linear-gradient(135deg, #fcb69f, #ffecd2); }
+
+        .week4-cards .card-front { background: linear-gradient(135deg, #d299c2, #fef9d7); }
+        .week4-cards .card-back { background: linear-gradient(135deg, #fef9d7, #d299c2); }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .cards-container { grid-template-columns: 1fr; }
+            .memory-card { height: 220px; }
+            .verse-text { font-size: 1em; }
+            .verse-reference { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌈 Monthly Scripture Memory Cards ✨</h1>
+        <p>Click cards to flip between verse and reference!</p>
+        <div style="margin-top: 15px; font-size: 1.1em; opacity: 0.9;">
+            <strong>Created by Cleon J. Alleyne</strong><br>
+            💫 Depths to Heights Ministry 💫<br>
+            <span style="font-size: 0.9em;">depthstoheights@gmail.com | www.depthstoheights.org</span>
+        </div>
+    </div>
+
+    <div class="week-selector">
+        <button class="week-btn week1 active" onclick="showWeek(1)">Week 1: God's Love</button>
+        <button class="week-btn week2" onclick="showWeek(2)">Week 2: Faith & Trust</button>
+        <button class="week-btn week3" onclick="showWeek(3)">Week 3: Peace & Joy</button>
+        <button class="week-btn week4" onclick="showWeek(4)">Week 4: Strength & Hope</button>
+    </div>
+
+    <div class="instruction">
+        💡 Tip: Click any card to flip it and reveal the other side!
+    </div>
+
+    <!-- Week 1: God's Love -->
+    <div id="week1" class="week-content">
+        <div class="week-theme">
+            <h2>💕 Week 1: God's Unconditional Love</h2>
+            <p>Discover the depth and permanence of God's love for you</p>
+        </div>
+        <div class="cards-container week1-cards">
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">1</div>
+                        <div class="card-content">
+                            <div class="verse-text">"For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">John 3:16</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">2</div>
+                        <div class="card-content">
+                            <div class="verse-text">"See what great love the Father has lavished on us, that we should be called children of God! And that is what we are!"</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">1 John 3:1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">3</div>
+                        <div class="card-content">
+                            <div class="verse-text">"But God demonstrates his own love for us in this: While we were still sinners, Christ died for us."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Romans 5:8</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">4</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Neither height nor depth, nor anything else in all creation, will be able to separate us from the love of God that is in Christ Jesus our Lord."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Romans 8:39</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">5</div>
+                        <div class="card-content">
+                            <div class="verse-text">"The Lord your God is with you, the Mighty Warrior who saves. He will take great delight in you; in his love he will no longer rebuke you, but will rejoice over you with singing."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Zephaniah 3:17</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">6</div>
+                        <div class="card-content">
+                            <div class="verse-text">"How great is the love the Father has lavished on us, that we should be called children of God!"</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">1 John 3:1a</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">7</div>
+                        <div class="card-content">
+                            <div class="verse-text">"This is love: not that we loved God, but that he loved us and sent his Son as an atoning sacrifice for our sins."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">1 John 4:10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Week 2: Faith & Trust -->
+    <div id="week2" class="week-content" style="display: none;">
+        <div class="week-theme">
+            <h2>🙏 Week 2: Faith & Trust in God</h2>
+            <p>Building unshakeable trust in God's character and promises</p>
+        </div>
+        <div class="cards-container week2-cards">
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">8</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Proverbs 3:5-6</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">9</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Now faith is confidence in what we hope for and assurance about what we do not see."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Hebrews 11:1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">10</div>
+                        <div class="card-content">
+                            <div class="verse-text">"And without faith it is impossible to please God, because anyone who comes to him must believe that he exists and that he rewards those who earnestly seek him."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Hebrews 11:6</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">11</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Joshua 1:9</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">12</div>
+                        <div class="card-content">
+                            <div class="verse-text">"For we live by faith, not by sight."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">2 Corinthians 5:7</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">13</div>
+                        <div class="card-content">
+                            <div class="verse-text">"If any of you lacks wisdom, you should ask God, who gives generously to all without finding fault, and it will be given to you."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">James 1:5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">14</div>
+                        <div class="card-content">
+                            <div class="verse-text">"But when you ask, you must believe and not doubt, because the one who doubts is like a wave of the sea, blown and tossed by the wind."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">James 1:6</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Week 3: Peace & Joy -->
+    <div id="week3" class="week-content" style="display: none;">
+        <div class="week-theme">
+            <h2>☮️ Week 3: Peace & Joy in Christ</h2>
+            <p>Finding lasting peace and joy that transcends circumstances</p>
+        </div>
+        <div class="cards-container week3-cards">
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">15</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Peace I leave with you; my peace I give you. I do not give to you as the world gives. Do not let your hearts be troubled and do not be afraid."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">John 14:27</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">16</div>
+                        <div class="card-content">
+                            <div class="verse-text">"And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Philippians 4:7</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">17</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Rejoice in the Lord always. I will say it again: Rejoice!"</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Philippians 4:4</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">18</div>
+                        <div class="card-content">
+                            <div class="verse-text">"You make known to me the path of life; you will fill me with joy in your presence, with eternal pleasures at your right hand."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Psalm 16:11</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">19</div>
+                        <div class="card-content">
+                            <div class="verse-text">"The joy of the Lord is your strength."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Nehemiah 8:10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">20</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Let the peace of Christ rule in your hearts, since as members of one body you were called to peace. And be thankful."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Colossians 3:15</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">21</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Though you have not seen him, you love him; and even though you do not see him now, you believe in him and are filled with an inexpressible and glorious joy."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">1 Peter 1:8</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Week 4: Strength & Hope -->
+    <div id="week4" class="week-content" style="display: none;">
+        <div class="week-theme">
+            <h2>💪 Week 4: Strength & Hope in God</h2>
+            <p>Finding supernatural strength and unshakeable hope</p>
+        </div>
+        <div class="cards-container week4-cards">
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">22</div>
+                        <div class="card-content">
+                            <div class="verse-text">"I can do all this through him who gives me strength."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Philippians 4:13</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">23</div>
+                        <div class="card-content">
+                            <div class="verse-text">"But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Isaiah 40:31</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">24</div>
+                        <div class="card-content">
+                            <div class="verse-text">"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, to give you hope and a future."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Jeremiah 29:11</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">25</div>
+                        <div class="card-content">
+                            <div class="verse-text">"My grace is sufficient for you, for my power is made perfect in weakness."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">2 Corinthians 12:9</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">26</div>
+                        <div class="card-content">
+                            <div class="verse-text">"And we know that in all things God works for the good of those who love him, who have been called according to his purpose."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Romans 8:28</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">27</div>
+                        <div class="card-content">
+                            <div class="verse-text">"Be strong and courageous! Do not be afraid or discouraged. For the Lord your God is with you wherever you go."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Joshua 1:9</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-card" onclick="flipCard(this)">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="day-number">28</div>
+                        <div class="card-content">
+                            <div class="verse-text">"May the God of hope fill you with all joy and peace as you trust in him, so that you may overflow with hope by the power of the Holy Spirit."</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="verse-reference">Romans 15:13</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function flipCard(card) {
+            card.classList.toggle('flipped');
+        }
+
+        function showWeek(weekNumber) {
+            // Hide all weeks
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('week' + i).style.display = 'none';
+                document.querySelector('.week' + i).classList.remove('active');
+            }
+            
+            // Show selected week
+            document.getElementById('week' + weekNumber).style.display = 'block';
+            document.querySelector('.week' + weekNumber).classList.add('active');
+        }
+
+        // Reset all cards when switching weeks
+        function resetCards() {
+            const flippedCards = document.querySelectorAll('.memory-card.flipped');
+            flippedCards.forEach(card => {
+                card.classList.remove('flipped');
+            });
+        }
+
+        // Add event listeners to week buttons
+        document.querySelectorAll('.week-btn').forEach(btn => {
+            btn.addEventListener('click', resetCards);
+        });
+    </script>
+</body>
+</html>
